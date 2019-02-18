@@ -70,7 +70,7 @@ create_all() {
         #start docker detached to keep it runing
         #Network will be added later
         #docker run --name $name   -td ubuntu
-        docker run --name $name  --network none -td ubuntu
+        docker run --name $name  --network none -td granjan/ubuntu-net-ready /bin/bash
         #pid="$(docker inspect --format '{{.State.Pid}}' $name)"
 
         echo "## Container name  :" $name
@@ -92,7 +92,8 @@ create_all() {
 
             ip_prefix="24"
             container_veth_ip="$ip_msb.$ifnum.$container_index.2/24"
-            container_veth_network="$ip_msb.$ifnum.$container_index.0/24"
+            #container_veth_network="$ip_msb.$ifnum.$container_index.0/24"
+            container_veth_network="$ip_msb.$ifnum.0.0/16"
             container_veth_gw="$ip_msb.$ifnum.$container_index.1"
             vpp_host_veth_ip="$ip_msb.$ifnum.$container_index.1/24"
 
@@ -129,7 +130,8 @@ create_all() {
 
 }
 
-
+#Hack
+vppctl restart
 
 delete_all
 create_all
