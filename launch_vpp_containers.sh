@@ -1,16 +1,19 @@
 #!/bin/bash
 
+if [ -z "$VPP_WS_DIR"  ]
+then
+    echo "##### \$VPP_WS_DIR is empty."
+    echo "##### Please go to the vpp root directory and run below commands."
+    echo "   export VPP_WS_DIR=\`pwd\`"
+    exit
+fi
+
 if [ $USER != "root"  ] ; then
     echo "Restarting script with sudo..."
     sudo VPP_WS_DIR=$VPP_WS_DIR  $0 ${*}
     exit
 fi
 
-if [ -z "$VPP_WS_DIR"  ]
-then
-    echo "\$VPP_WS_DIR is empty. Please export as sudo and try again"
-    exit
-fi
 
 if_per_container=2
 container_prefix="sity"
@@ -94,8 +97,11 @@ create_all() {
         echo "#!/bin/bash
 cd /vpp/build-root
 dpkg -i *.deb
+mkdir  -p /var/log/vpp/
+touch /var/log/vpp/vpp.log
 /usr/bin/vpp  -c /etc/vpp_startup.conf
 #Add a logic to check if vpp is ready
+sleep 20
 " > $vpp_script
         chmod +x $vpp_script
 
@@ -110,12 +116,13 @@ unix {
   gid 0
 }
 
-#cpu {
-#       main-core 2
-#}
+cpu {
+       main-core 2
+}
 
  plugins {
-        plugin default { disable }
+        plugin default { enable }
+        plugin dpdk_plugin.so { disable  }
  }
 " > $vpp_startup_conf
 		docker cp $vpp_startup_conf  $name:/etc/vpp_startup.conf
