@@ -70,7 +70,7 @@ create_all() {
         #start docker detached to keep it runing
         #Network will be added later
         #docker run --name $name   -td ubuntu
-        docker run --name $name  --network none -td granjan/ubuntu-net-ready /bin/bash
+        docker run --name $name  --network none -td granjan/ubuntu-net-ready:linux_stack_only /bin/bash
         #pid="$(docker inspect --format '{{.State.Pid}}' $name)"
 
         echo "## Container name  :" $name
