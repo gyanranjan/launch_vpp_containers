@@ -19,7 +19,7 @@ max_containers=2
 ip_msb="181"
 src_volume="$VPP_WS_DIR"
 dest_volume="/vpp"
-docker_image="debian-net-ready:v1.0"
+docker_image="granjan/debian-net-ready:v1.0"
 #docker_image=Not needed for ubuntu for now
 
 exposedockernetns () {
