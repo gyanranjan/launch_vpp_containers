@@ -20,6 +20,9 @@ container_prefix="sity"
 interface_prefix="sity"
 max_containers=2
 ip_msb="181"
+ip_vxlan_msb="6"
+bridge_domain="13"
+vxlan_vni="13"
 src_volume="$VPP_WS_DIR"
 dest_volume="/vpp"
 docker_image="granjan/debian-net-ready:v1.0"
@@ -191,9 +194,38 @@ cpu {
                 /usr/bin/vppctl ip route add $container_veth_network via $container_veth_gw  host-$veth_ifname
                 " > $tempfile
 
+            if [ "$ifnum" == "0" ]; then
+                #vxlan only on interface 0
+                vtep_ip=$ip_vxlan_msb.0.0.25$container_index
+                #bridge_domain="$bridge_domain"
+                #vxlan_vni="$vxlan_vni"
+			    mac_loopback=`printf '00:60:2f:%02x:%02x:%02x\n' $[RANDOM%256] $[RANDOM%256] $icontainer_index`
+
+			    #Bad Hack
+			    if [ $container_index -eq 0 ];then
+				    tunnel_src_addr=$ip_msb.$ifnum.0.2
+				    tunnel_dest_addr=$ip_msb.$ifnum.1.2
+			    else
+				    tunnel_src_addr=$ip_msb.$ifnum.1.2
+				    tunnel_dest_addr=$ip_msb.$ifnum.0.2
+			    fi
+
+                echo "
+
+/usr/bin/vppctl create bridge-domain $bridge_domain learn 1 forward 1 uu-flood 1 flood 1 arp-term 0
+#need some logic okay for now to hardcode
+/usr/bin/vppctl create vxlan tunnel src $tunnel_src_addr dst $tunnel_dest_addr vni $vxlan_vni
+/usr/bin/vppctl set interface l2 bridge vxlan_tunnel0 $bridge_domain 1
+/usr/bin/vppctl loopback create mac $mac_loopback
+/usr/bin/vppctl set interface l2 bridge loop0 $bridge_domain bvi
+/usr/bin/vppctl set interface state loop0 up
+/usr/bin/vppctl set interface ip table loop0 5
+/usr/bin/vppctl set interface ip address loop0 $vtep_ip/16
+" >> $tempfile
+fi
             chmod 777 $tempfile
-            docker cp $tempfile $name:/vpp_interface_bringup
-            docker exec  $name /bin/sh -c "/vpp_interface_bringup"
+            docker cp $tempfile $name:/vpp_int_conf_$ifnum
+            docker exec  $name /bin/sh -c "/vpp_int_conf_$ifnum"
             rm $tempfile
 
             vppctl create host-interface name $vpp_host_veth_iname
