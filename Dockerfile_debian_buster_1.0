@@ -1,0 +1,18 @@
+FROM debian:buster
+MAINTAINER gyan.gyanranjan@gmail.com 
+
+RUN     apt-get  update -y \
+&& apt-get upgrade -y \
+&& apt-get install python3 -y \
+&& apt-get install bash -y \
+&& apt-get install procps -y \
+&& apt-get install dpkg -y \
+&& apt-get install apt-utils  -y \
+&& apt-get install vim -y \
+&& apt-get install tcpdump -y \
+&& apt-get install  iproute2 -y \
+&& apt-get install  net-tools  -y \
+&& apt-get install -y iputils-ping \
+&& apt-get install -y libpython-stdlib libpython2.7-minimal libpython2.7-stdlib python python-cffi python-cffi-backend python-enum34 python-minimal python-ply python-pycparser python2.7 python2.7-minimal \
+&& apt-get install -y gdb libmbedcrypto3 libmbedtls12 libmbedx509-0 libnuma1 
+CMD [/bin/bash] 
